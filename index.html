@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coisas de Viagem – Checklist de mala</title>
+<meta name="description" content="Checklist de mala para praia e hotel com piscina.">
+<meta name="theme-color" content="#0e7490">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coisas de Viagem">
+<style>
+  :root{
+    --bg:#f3f8f9; --card:#fff; --ink:#0f2a33; --muted:#5b7480; --line:#e2ecef;
+    --sea:#0e7490; --sea2:#06b6d4; --sand:#fbbf24; --ok:#10b981; --danger:#e11d48;
+    --r:16px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#0b1a20;--card:#12262e;--ink:#e6f3f6;--muted:#8fb0bb;--line:#1f3a44}
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);
+       padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+  header{position:sticky;top:0;z-index:10;color:#fff;
+    background:linear-gradient(135deg,var(--sea),var(--sea2));
+    padding:calc(14px + env(safe-area-inset-top)) 18px 16px;box-shadow:0 4px 18px rgba(14,116,144,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:720px;margin:0 auto}
+  h1{font-size:1.15rem;margin:0;font-weight:700}
+  h1 small{display:block;font-weight:500;opacity:.85;font-size:.8rem}
+  .prog{max-width:720px;margin:12px auto 0}
+  .prog-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.85rem;opacity:.95}
+  .prog-row b{font-size:1.6rem}
+  .bar{height:10px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;width:0;background:var(--sand);border-radius:99px;transition:width .35s}
+  .iconbtn{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:12px;padding:8px 10px;font-size:1rem;cursor:pointer}
+  main{max-width:720px;margin:0 auto;padding:14px 12px}
+  .tools{display:flex;gap:8px;margin-bottom:12px}
+  .chip{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;
+        padding:9px 12px;font-size:.88rem;cursor:pointer}
+  .chip.on{background:var(--sea);color:#fff;border-color:var(--sea)}
+  section{background:var(--card);border-radius:var(--r);margin-bottom:12px;border:1px solid var(--line);overflow:hidden}
+  .cat{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none}
+  .cat .em{font-size:1.4rem}
+  .cat .t{flex:1}
+  .cat .t b{display:block;font-size:1rem}
+  .cat .t span{font-size:.8rem;color:var(--muted)}
+  .cat .arrow{transition:transform .2s;color:var(--muted)}
+  section.closed .arrow{transform:rotate(-90deg)}
+  section.closed ul,section.closed .add{display:none}
+  section.done .cat .t span{color:var(--ok);font-weight:600}
+  .mini{height:4px;background:var(--line)}
+  .mini i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+  ul{list-style:none;margin:0;padding:4px 0}
+  li{display:flex;align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--line)}
+  li label{flex:1;display:flex;align-items:center;gap:12px;cursor:pointer;min-height:26px}
+  li input{appearance:none;width:24px;height:24px;border:2px solid var(--muted);border-radius:8px;flex:none;
+           display:grid;place-items:center;transition:.15s;margin:0}
+  li input:checked{background:var(--ok);border-color:var(--ok)}
+  li input:checked::after{content:"✓";color:#fff;font-weight:800;font-size:15px}
+  li input:checked + span{text-decoration:line-through;color:var(--muted)}
+  li .del{border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px 6px}
+  body.hide li.checked{display:none}
+  .add{display:flex;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--line)}
+  .add input{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:16px}
+  .add button{border:0;background:var(--sea);color:#fff;border-radius:10px;padding:0 14px;font-size:1.2rem;cursor:pointer}
+  .bottom{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:center}
+  .bottom button{flex:1;max-width:340px;border:0;border-radius:12px;padding:13px;font-size:.95rem;font-weight:600;cursor:pointer}
+  .b1{background:var(--line);color:var(--ink)}
+  .b2{background:var(--danger);color:#fff}
+  .done-msg{display:none;text-align:center;padding:18px;background:var(--card);border-radius:var(--r);
+    border:1px solid var(--line);margin-bottom:12px;font-weight:600}
+  body.all .done-msg{display:block}
+  footer{text-align:center;font-size:.78rem;color:var(--muted);padding:14px}
+  footer a{color:var(--sea);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>🏖️ Coisas de Viagem<small>Checklist de mala – Praia e hotel</small></h1>
+    <button class="iconbtn" id="toggleAll" title="Abrir/fechar categorias">⇅</button>
+  </div>
+  <div class="prog">
+    <div class="prog-row"><span>Progresso da mala</span><b id="pct">0%</b></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="prog-row" style="margin-top:6px"><span id="count">0 de 0 itens separados</span></div>
+  </div>
+</header>
+
+<main>
+  <div class="tools">
+    <button class="chip" id="hideBtn">Esconder separados</button>
+    <button class="chip" id="pendBtn">Ver só o que falta</button>
+  </div>
+  <div class="done-msg">🎉 Mala pronta! Boa viagem e aproveita a piscina.</div>
+  <div id="list"></div>
+  <footer>Desenvolvido por <a href="https://wa.me/5511913347390" target="_blank" rel="noopener">Phael Tech Support</a></footer>
+</main>
+
+<div class="bottom">
+  <button class="b1" id="uncheck">Desmarcar tudo</button>
+  <button class="b2" id="reset">Restaurar lista</button>
+</div>
+
+<script>
+const DEFAULT = [
+  {id:"roupas",em:"👕",name:"Roupas",items:["Camisetas","Regatas","Shorts","Bermudas","Calças leves","Roupas íntimas","Meias","Pijama","Roupa para sair à noite","Uma roupa mais arrumada","Casaco leve"]},
+  {id:"praia",em:"🏊",name:"Praia e piscina",items:["Roupas de banho / sungas / biquínis","Toalha de praia","Chinelo","Óculos de sol","Boné ou chapéu","Canga","Bolsa de praia","Protetor solar corporal","Protetor solar facial","Pós-sol","Saída de praia","Sacola para roupas molhadas"]},
+  {id:"higiene",em:"🧴",name:"Higiene pessoal",items:["Escova de dentes","Creme dental","Fio dental","Desodorante","Perfume","Shampoo","Condicionador","Sabonete","Hidratante corporal","Pente ou escova de cabelo","Gel ou creme para cabelo","Aparelho de barbear","Espuma ou gel de barbear","Cortador de unhas"]},
+  {id:"eletronicos",em:"🔌",name:"Eletrônicos",items:["Celular","Carregador do celular","Fone de ouvido","Carregador portátil (power bank)","Relógio e carregador","Carregador extra","Adaptador de tomada"]},
+  {id:"documentos",em:"🪪",name:"Documentos e dinheiro",items:["RG ou CNH","Cartões de crédito/débito","Dinheiro em espécie","Comprovante de reserva do hotel","Passagens ou comprovantes de transporte","Carteirinha do plano de saúde"]},
+  {id:"saude",em:"💊",name:"Saúde e emergência",items:["Medicamentos de uso pessoal","Analgésico habitual","Antialérgico habitual","Repelente","Curativos (Band-Aid)","Álcool em gel","Kit básico de primeiros socorros"]},
+  {id:"calcados",em:"👟",name:"Calçados e acessórios",items:["Tênis confortável","Chinelo","Sandália","Óculos de sol","Relógio","Cinto","Mochila pequena"]},
+  {id:"hotel",em:"🏨",name:"Extras para o hotel",items:["Pijama confortável","Roupa para ficar no quarto","Sacola para roupa suja","Garrafa de água reutilizável","Livro ou Kindle","Fones de ouvido","Lanche para viagem","Cadeado para mala"]}
+];
+const KEY = "coisasdeviagem:v1";
+let uid = 0;
+const fresh = () => ({ hide:false, closed:{}, cats: DEFAULT.map(c => ({id:c.id,em:c.em,name:c.name,
+  items:c.items.map(t => ({id:c.id+"-"+(uid++),t,ok:false,custom:false}))})) });
+
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ S = fresh(); }
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = S.cats.map(c => {
+    const done = c.items.filter(i=>i.ok).length, n = c.items.length;
+    const cls = (S.closed[c.id]?"closed ":"") + (n && done===n ? "done":"");
+    return `<section class="${cls}" data-cat="${c.id}">
+      <div class="cat" data-toggle="${c.id}">
+        <span class="em">${c.em}</span>
+        <div class="t"><b>${esc(c.name)}</b><span>${done===n&&n?"✓ Completo":done+"/"+n+" itens"}</span></div>
+        <span class="arrow">▾</span>
+      </div>
+      <div class="mini"><i style="width:${n?done/n*100:0}%"></i></div>
+      <ul>${c.items.map(i=>`<li class="${i.ok?"checked":""}">
+        <label><input type="checkbox" data-item="${i.id}" ${i.ok?"checked":""}><span>${esc(i.t)}</span></label>
+        <button class="del" data-del="${i.id}" title="Remover">✕</button></li>`).join("")}</ul>
+      <form class="add" data-add="${c.id}"><input placeholder="Adicionar item…" maxlength="60"><button>+</button></form>
+    </section>`;
+  }).join("");
+  updateTotals();
+}
+function updateTotals(){
+  const all = S.cats.flatMap(c=>c.items), done = all.filter(i=>i.ok).length;
+  const p = all.length ? Math.round(done/all.length*100) : 0;
+  document.getElementById("pct").textContent = p+"%";
+  document.getElementById("bar").style.width = p+"%";
+  document.getElementById("count").textContent = `${done} de ${all.length} itens separados`;
+  document.body.classList.toggle("hide", S.hide);
+  document.body.classList.toggle("all", all.length>0 && done===all.length);
+  document.getElementById("hideBtn").classList.toggle("on", S.hide);
+}
+const findItem = id => { for(const c of S.cats){ const i=c.items.find(x=>x.id===id); if(i) return [c,i]; } return []; };
+
+document.addEventListener("change", e => {
+  const id = e.target.dataset.item; if(!id) return;
+  const [,i] = findItem(id); i.ok = e.target.checked; save();
+  if (navigator.vibrate && i.ok) navigator.vibrate(15);
+  render();
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-toggle]");
+  if(t){ const id=t.dataset.toggle; S.closed[id]=!S.closed[id]; save(); render(); return; }
+  const d = e.target.closest("[data-del]");
+  if(d){ const [c,i]=findItem(d.dataset.del); if(confirm(`Remover "${i.t}" da lista?`)){ c.items=c.items.filter(x=>x!==i); save(); render(); } }
+});
+document.addEventListener("submit", e => {
+  const f = e.target.closest("[data-add]"); if(!f) return; e.preventDefault();
+  const v = f.querySelector("input").value.trim(); if(!v) return;
+  const c = S.cats.find(x=>x.id===f.dataset.add);
+  c.items.push({id:c.id+"-c"+Date.now(),t:v,ok:false,custom:true}); save(); render();
+  const nf=document.querySelector(`[data-add="${c.id}"] input`); nf&&nf.focus();
+});
+document.getElementById("hideBtn").onclick = () => { S.hide=!S.hide; save(); updateTotals(); };
+document.getElementById("pendBtn").onclick = () => {
+  S.hide = true; S.cats.forEach(c => S.closed[c.id] = c.items.every(i=>i.ok)); save(); render();
+};
+document.getElementById("toggleAll").onclick = () => {
+  const anyOpen = S.cats.some(c=>!S.closed[c.id]);
+  S.cats.forEach(c => S.closed[c.id] = anyOpen); save(); render();
+};
+document.getElementById("uncheck").onclick = () => {
+  if(confirm("Desmarcar todos os itens para uma nova viagem?")){ S.cats.forEach(c=>c.items.forEach(i=>i.ok=false)); save(); render(); }
+};
+document.getElementById("reset").onclick = () => {
+  if(confirm("Restaurar a lista original? Itens adicionados por você serão apagados.")){ S = fresh(); save(); render(); }
+};
+render();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
