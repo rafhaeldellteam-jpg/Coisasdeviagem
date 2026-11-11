@@ -44,8 +44,7 @@
   .chip.on{background:var(--sea);color:#fff;border-color:var(--sea)}
   section{background:var(--card);border-radius:var(--r);margin-bottom:12px;border:1px solid var(--line);overflow:hidden}
   .cat{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none}
-  .cat .em{font-size:1.4rem}
-  .cat .t{flex:1}
+    .cat .t{flex:1}
   .cat .t b{display:block;font-size:1rem}
   .cat .t span{font-size:.8rem;color:var(--muted)}
   .cat .arrow{transition:transform .2s;color:var(--muted)}
@@ -60,7 +59,7 @@
   li input{appearance:none;width:24px;height:24px;border:2px solid var(--muted);border-radius:8px;flex:none;
            display:grid;place-items:center;transition:.15s;margin:0}
   li input:checked{background:var(--ok);border-color:var(--ok)}
-  li input:checked::after{content:"✓";color:#fff;font-weight:800;font-size:15px}
+  li input:checked{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E");background-size:16px;background-repeat:no-repeat;background-position:center}
   li input:checked + span{text-decoration:line-through;color:var(--muted)}
   li .del{border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px 6px}
   body.hide li.checked{display:none}
@@ -75,6 +74,15 @@
   .done-msg{display:none;text-align:center;padding:18px;background:var(--card);border-radius:var(--r);
     border:1px solid var(--line);margin-bottom:12px;font-weight:600}
   body.all .done-msg{display:block}
+  svg.i{width:1em;height:1em;vertical-align:-.15em;flex:none}
+  h1{display:flex;align-items:center;gap:10px}
+  .logo{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.18);font-size:22px}
+  .cat .em{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,var(--sea) 12%,transparent);color:var(--sea);font-size:22px}
+  section.done .cat .em{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+  .arrow{display:grid;font-size:20px}
+  .iconbtn{display:grid;place-items:center;font-size:20px}
+  .done-msg span{display:inline-block;color:var(--sand);font-size:1.4rem;vertical-align:middle;margin-right:8px}
+  .add button{display:grid;place-items:center;font-size:20px}
   footer{text-align:center;font-size:.78rem;color:var(--muted);padding:14px}
   footer a{color:var(--sea);text-decoration:none;font-weight:600}
 </style>
@@ -82,8 +90,8 @@
 <body>
 <header>
   <div class="top">
-    <h1>🏖️ Coisas de Viagem<small>Checklist de mala – Praia e hotel</small></h1>
-    <button class="iconbtn" id="toggleAll" title="Abrir/fechar categorias">⇅</button>
+    <h1><span class="logo" data-i="umbrella"></span><span>Coisas de Viagem<small>Checklist de mala – Praia e hotel</small></span></h1>
+    <button class="iconbtn" id="toggleAll" title="Abrir/fechar categorias" data-i="fold"></button>
   </div>
   <div class="prog">
     <div class="prog-row"><span>Progresso da mala</span><b id="pct">0%</b></div>
@@ -97,7 +105,7 @@
     <button class="chip" id="hideBtn">Esconder separados</button>
     <button class="chip" id="pendBtn">Ver só o que falta</button>
   </div>
-  <div class="done-msg">🎉 Mala pronta! Boa viagem e aproveita a piscina.</div>
+  <div class="done-msg"><span data-i="party"></span>Mala pronta! Boa viagem e aproveita a piscina.</div>
   <div id="list"></div>
   <footer>Desenvolvido por <a href="https://wa.me/5511913347390" target="_blank" rel="noopener">Phael Tech Support</a></footer>
 </main>
@@ -108,19 +116,40 @@
 </div>
 
 <script>
+const P = {
+  umbrella:'<path d="M2 12a10 10 0 0 1 20 0z"/><path d="M12 12v8a2 2 0 0 1-4 0"/><path d="M12 2v1"/>',
+  fold:'<path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>',
+  party:'<path d="M5.8 11.3L2 22l10.7-3.8"/><path d="M4 3h.01M22 8h.01M15 2h.01M22 20h.01"/><path d="M22 2l-2.2.8a2.9 2.9 0 0 0-1.9 3.2c.1.9-.5 1.7-1.4 1.7H16"/><path d="M11 13c1.9 1.9 2.8 4.2 2 5s-3.1-.1-5-2-2.8-4.2-2-5 3.1.1 5 2z"/>',
+  shirt:'<path d="M20.4 6.6L16 4a4 4 0 0 1-8 0L3.6 6.6a1 1 0 0 0-.5 1.2l1 3a1 1 0 0 0 1.3.6L7 11v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-9l1.6.4a1 1 0 0 0 1.3-.6l1-3a1 1 0 0 0-.5-1.2z"/>',
+  waves:'<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/>',
+  bottle:'<path d="M10 2h4"/><path d="M11 2v3M13 2v3"/><path d="M9 5h6l1 4v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V9z"/><path d="M8 12h8"/>',
+  plug:'<path d="M12 22v-5"/><path d="M9 8V2M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8z"/>',
+  id:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h2M15 12h2M7 16h10"/>',
+  health:'<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/><path d="M3.2 12H9l1-2 2 4 1-2h7.8"/>',
+  shoe:'<path d="M3 16v-6a2 2 0 0 1 2-2h1l2 3h3l2-3h1c1 0 2 1 2 2l5 3a2 2 0 0 1 1 1.7V16z"/><path d="M3 16h19v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M10 11v2M13 11v2"/>',
+  hotel:'<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>',
+  bag:'<rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>',
+  chev:'<path d="M6 9l6 6 6-6"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  x:'<path d="M18 6L6 18M6 6l12 12"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>'
+};
+const ic = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const ICONS = {roupas:"shirt",praia:"waves",higiene:"bottle",eletronicos:"plug",documentos:"id",saude:"health",calcados:"shoe",hotel:"hotel"};
+document.querySelectorAll("[data-i]").forEach(e => e.innerHTML = ic(e.dataset.i));
 const DEFAULT = [
-  {id:"roupas",em:"👕",name:"Roupas",items:["Camisetas","Regatas","Shorts","Bermudas","Calças leves","Roupas íntimas","Meias","Pijama","Roupa para sair à noite","Uma roupa mais arrumada","Casaco leve"]},
-  {id:"praia",em:"🏊",name:"Praia e piscina",items:["Roupas de banho / sungas / biquínis","Toalha de praia","Chinelo","Óculos de sol","Boné ou chapéu","Canga","Bolsa de praia","Protetor solar corporal","Protetor solar facial","Pós-sol","Saída de praia","Sacola para roupas molhadas"]},
-  {id:"higiene",em:"🧴",name:"Higiene pessoal",items:["Escova de dentes","Creme dental","Fio dental","Desodorante","Perfume","Shampoo","Condicionador","Sabonete","Hidratante corporal","Pente ou escova de cabelo","Gel ou creme para cabelo","Aparelho de barbear","Espuma ou gel de barbear","Cortador de unhas"]},
-  {id:"eletronicos",em:"🔌",name:"Eletrônicos",items:["Celular","Carregador do celular","Fone de ouvido","Carregador portátil (power bank)","Relógio e carregador","Carregador extra","Adaptador de tomada"]},
-  {id:"documentos",em:"🪪",name:"Documentos e dinheiro",items:["RG ou CNH","Cartões de crédito/débito","Dinheiro em espécie","Comprovante de reserva do hotel","Passagens ou comprovantes de transporte","Carteirinha do plano de saúde"]},
-  {id:"saude",em:"💊",name:"Saúde e emergência",items:["Medicamentos de uso pessoal","Analgésico habitual","Antialérgico habitual","Repelente","Curativos (Band-Aid)","Álcool em gel","Kit básico de primeiros socorros"]},
-  {id:"calcados",em:"👟",name:"Calçados e acessórios",items:["Tênis confortável","Chinelo","Sandália","Óculos de sol","Relógio","Cinto","Mochila pequena"]},
-  {id:"hotel",em:"🏨",name:"Extras para o hotel",items:["Pijama confortável","Roupa para ficar no quarto","Sacola para roupa suja","Garrafa de água reutilizável","Livro ou Kindle","Fones de ouvido","Lanche para viagem","Cadeado para mala"]}
+  {id:"roupas",name:"Roupas",items:["Camisetas","Regatas","Shorts","Bermudas","Calças leves","Roupas íntimas","Meias","Pijama","Roupa para sair à noite","Uma roupa mais arrumada","Casaco leve"]},
+  {id:"praia",name:"Praia e piscina",items:["Roupas de banho / sungas / biquínis","Toalha de praia","Chinelo","Óculos de sol","Boné ou chapéu","Canga","Bolsa de praia","Protetor solar corporal","Protetor solar facial","Pós-sol","Saída de praia","Sacola para roupas molhadas"]},
+  {id:"higiene",name:"Higiene pessoal",items:["Escova de dentes","Creme dental","Fio dental","Desodorante","Perfume","Shampoo","Condicionador","Sabonete","Hidratante corporal","Pente ou escova de cabelo","Gel ou creme para cabelo","Aparelho de barbear","Espuma ou gel de barbear","Cortador de unhas"]},
+  {id:"eletronicos",name:"Eletrônicos",items:["Celular","Carregador do celular","Fone de ouvido","Carregador portátil (power bank)","Relógio e carregador","Carregador extra","Adaptador de tomada"]},
+  {id:"documentos",name:"Documentos e dinheiro",items:["RG ou CNH","Cartões de crédito/débito","Dinheiro em espécie","Comprovante de reserva do hotel","Passagens ou comprovantes de transporte","Carteirinha do plano de saúde"]},
+  {id:"saude",name:"Saúde e emergência",items:["Medicamentos de uso pessoal","Analgésico habitual","Antialérgico habitual","Repelente","Curativos (Band-Aid)","Álcool em gel","Kit básico de primeiros socorros"]},
+  {id:"calcados",name:"Calçados e acessórios",items:["Tênis confortável","Chinelo","Sandália","Óculos de sol","Relógio","Cinto","Mochila pequena"]},
+  {id:"hotel",name:"Extras para o hotel",items:["Pijama confortável","Roupa para ficar no quarto","Sacola para roupa suja","Garrafa de água reutilizável","Livro ou Kindle","Fones de ouvido","Lanche para viagem","Cadeado para mala"]}
 ];
 const KEY = "coisasdeviagem:v1";
 let uid = 0;
-const fresh = () => ({ hide:false, closed:{}, cats: DEFAULT.map(c => ({id:c.id,em:c.em,name:c.name,
+const fresh = () => ({ hide:false, closed:{}, cats: DEFAULT.map(c => ({id:c.id,name:c.name,
   items:c.items.map(t => ({id:c.id+"-"+(uid++),t,ok:false,custom:false}))})) });
 
 let S;
@@ -135,15 +164,15 @@ function render(){
     const cls = (S.closed[c.id]?"closed ":"") + (n && done===n ? "done":"");
     return `<section class="${cls}" data-cat="${c.id}">
       <div class="cat" data-toggle="${c.id}">
-        <span class="em">${c.em}</span>
-        <div class="t"><b>${esc(c.name)}</b><span>${done===n&&n?"✓ Completo":done+"/"+n+" itens"}</span></div>
-        <span class="arrow">▾</span>
+        <span class="em">${ic(ICONS[c.id]||"bag")}</span>
+        <div class="t"><b>${esc(c.name)}</b><span>${done===n&&n?ic("check")+" Completo":done+"/"+n+" itens"}</span></div>
+        <span class="arrow">${ic("chev")}</span>
       </div>
       <div class="mini"><i style="width:${n?done/n*100:0}%"></i></div>
       <ul>${c.items.map(i=>`<li class="${i.ok?"checked":""}">
         <label><input type="checkbox" data-item="${i.id}" ${i.ok?"checked":""}><span>${esc(i.t)}</span></label>
-        <button class="del" data-del="${i.id}" title="Remover">✕</button></li>`).join("")}</ul>
-      <form class="add" data-add="${c.id}"><input placeholder="Adicionar item…" maxlength="60"><button>+</button></form>
+        <button class="del" data-del="${i.id}" title="Remover">${ic("x")}</button></li>`).join("")}</ul>
+      <form class="add" data-add="${c.id}"><input placeholder="Adicionar item…" maxlength="60"><button aria-label="Adicionar">${ic("plus")}</button></form>
     </section>`;
   }).join("");
   updateTotals();
