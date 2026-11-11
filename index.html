@@ -54,14 +54,19 @@
   .mini{height:4px;background:var(--line)}
   .mini i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
   ul{list-style:none;margin:0;padding:4px 0}
-  li{display:flex;align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--line)}
+  li{display:flex;align-items:center;gap:10px;padding:9px 10px 9px 16px;border-top:1px solid var(--line)}
   li label{flex:1;display:flex;align-items:center;gap:12px;cursor:pointer;min-height:26px}
   li input{appearance:none;width:24px;height:24px;border:2px solid var(--muted);border-radius:8px;flex:none;
            display:grid;place-items:center;transition:.15s;margin:0}
   li input:checked{background:var(--ok);border-color:var(--ok)}
   li input:checked{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E");background-size:16px;background-repeat:no-repeat;background-position:center}
   li input:checked + span{text-decoration:line-through;color:var(--muted)}
-  li .del{border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px 6px}
+  .qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+  .qty button{border:0;background:var(--bg);color:var(--sea);width:32px;height:32px;display:grid;place-items:center;font-size:16px;cursor:pointer}
+  .qty button:disabled{color:var(--line);cursor:default}
+  .qty b{min-width:28px;text-align:center;font-size:.95rem;font-variant-numeric:tabular-nums}
+  li.checked .qty{opacity:.45}
+  li .del{border:0;background:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:6px;display:grid}
   body.hide li.checked{display:none}
   .add{display:flex;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--line)}
   .add input{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:16px}
@@ -132,7 +137,8 @@ const P = {
   chev:'<path d="M6 9l6 6 6-6"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
   x:'<path d="M18 6L6 18M6 6l12 12"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>'
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>'
 };
 const ic = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
 const ICONS = {roupas:"shirt",praia:"waves",higiene:"bottle",eletronicos:"plug",documentos:"id",saude:"health",calcados:"shoe",hotel:"hotel"};
@@ -150,7 +156,7 @@ const DEFAULT = [
 const KEY = "coisasdeviagem:v1";
 let uid = 0;
 const fresh = () => ({ hide:false, closed:{}, cats: DEFAULT.map(c => ({id:c.id,name:c.name,
-  items:c.items.map(t => ({id:c.id+"-"+(uid++),t,ok:false,custom:false}))})) });
+  items:c.items.map(t => ({id:c.id+"-"+(uid++),t,q:1,ok:false,custom:false}))})) });
 
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ S = fresh(); }
@@ -171,6 +177,7 @@ function render(){
       <div class="mini"><i style="width:${n?done/n*100:0}%"></i></div>
       <ul>${c.items.map(i=>`<li class="${i.ok?"checked":""}">
         <label><input type="checkbox" data-item="${i.id}" ${i.ok?"checked":""}><span>${esc(i.t)}</span></label>
+        <div class="qty"><button data-q="-1" data-id="${i.id}" aria-label="Diminuir" ${(i.q||1)<=1?"disabled":""}>${ic("minus")}</button><b>${i.q||1}</b><button data-q="1" data-id="${i.id}" aria-label="Aumentar">${ic("plus")}</button></div>
         <button class="del" data-del="${i.id}" title="Remover">${ic("x")}</button></li>`).join("")}</ul>
       <form class="add" data-add="${c.id}"><input placeholder="Adicionar item…" maxlength="60"><button aria-label="Adicionar">${ic("plus")}</button></form>
     </section>`;
@@ -198,6 +205,8 @@ document.addEventListener("change", e => {
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-toggle]");
   if(t){ const id=t.dataset.toggle; S.closed[id]=!S.closed[id]; save(); render(); return; }
+  const q = e.target.closest("[data-q]");
+  if(q){ const [,i]=findItem(q.dataset.id); i.q=Math.max(1,Math.min(99,(i.q||1)+ +q.dataset.q)); save(); render(); return; }
   const d = e.target.closest("[data-del]");
   if(d){ const [c,i]=findItem(d.dataset.del); if(confirm(`Remover "${i.t}" da lista?`)){ c.items=c.items.filter(x=>x!==i); save(); render(); } }
 });
@@ -205,7 +214,7 @@ document.addEventListener("submit", e => {
   const f = e.target.closest("[data-add]"); if(!f) return; e.preventDefault();
   const v = f.querySelector("input").value.trim(); if(!v) return;
   const c = S.cats.find(x=>x.id===f.dataset.add);
-  c.items.push({id:c.id+"-c"+Date.now(),t:v,ok:false,custom:true}); save(); render();
+  c.items.push({id:c.id+"-c"+Date.now(),t:v,q:1,ok:false,custom:true}); save(); render();
   const nf=document.querySelector(`[data-add="${c.id}"] input`); nf&&nf.focus();
 });
 document.getElementById("hideBtn").onclick = () => { S.hide=!S.hide; save(); updateTotals(); };
